@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36804.6 d17.14
+VisualStudioVersion = 17.14.36804.6
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Labs_Parallel-and-Distributed-Programming", "Labs_Parallel-and-Distributed-Programming\Labs_Parallel-and-Distributed-Programming.csproj", "{20067518-F1AC-4B23-84FE-0CD96000EAE9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lab_01", "Lab_01\Lab_01.csproj", "{950D089E-4072-4389-8DD4-6699A696D44A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{20067518-F1AC-4B23-84FE-0CD96000EAE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{20067518-F1AC-4B23-84FE-0CD96000EAE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{20067518-F1AC-4B23-84FE-0CD96000EAE9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{950D089E-4072-4389-8DD4-6699A696D44A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{950D089E-4072-4389-8DD4-6699A696D44A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{950D089E-4072-4389-8DD4-6699A696D44A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{950D089E-4072-4389-8DD4-6699A696D44A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
