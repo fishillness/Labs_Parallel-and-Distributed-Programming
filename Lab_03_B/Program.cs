@@ -58,6 +58,7 @@ internal class Program
                 magnitudeKernel(pixelCount, gpuMX.View, gpuMY.View, gpuMR.View);
                 accelerator.Synchronize();
 
+                // Поиск  MRmax
                 float[] mrCpu = new float[pixelCount];
                 gpuMR.CopyToCPU(mrCpu);
                 float maxMR = mrCpu.Max();
@@ -92,9 +93,9 @@ internal class Program
             Action<Index1D, ArrayView<float>, ArrayView<byte>, float> normalizeKernel
     )? InitializeCUDA()
     {
-        var context = Context.CreateDefault();
+        Context context = Context.CreateDefault();
 
-        var cudaDevice = context.Devices
+        Device? cudaDevice = context.Devices
             .Where(d => d.AcceleratorType == AcceleratorType.Cuda)
             .OrderByDescending(d => d.MaxNumThreads)
             .FirstOrDefault();
@@ -108,7 +109,7 @@ internal class Program
 
         Console.WriteLine($"CUDA device: {cudaDevice.Name}");
 
-        var accelerator = cudaDevice.CreateAccelerator(context);
+        Accelerator accelerator = cudaDevice.CreateAccelerator(context);
 
         var intensityKernel = accelerator.LoadAutoGroupedStreamKernel<
             Index1D, ArrayView<byte>, ArrayView<float>, int, int>(IntensityKernel);
@@ -125,9 +126,7 @@ internal class Program
         var normalizeKernel = accelerator.LoadAutoGroupedStreamKernel<
             Index1D, ArrayView<float>, ArrayView<byte>, float>(NormalizeKernel);
 
-        return (context, accelerator,
-                intensityKernel, sobelXKernel, sobelYKernel,
-                magnitudeKernel, normalizeKernel);
+        return (context, accelerator, intensityKernel, sobelXKernel, sobelYKernel, magnitudeKernel, normalizeKernel);
     }
 
     static (byte[] imageBytes, int width, int height) LoadImage(string inputPath)
@@ -159,9 +158,9 @@ internal class Program
         float g = imageBytes[byteIdx + 1]; 
         float b = imageBytes[byteIdx + 2]; 
 
-        intensity[pixelIndex] = (r + g + b) / 3.0f;
+        intensity[pixelIndex] = (r + g + b) / 3f;
     }
-
+    // MX
     static void SobelXKernel(Index1D pixelIndex, ArrayView<float> intensity, ArrayView<float> mx, int width, int height)
     {
         int x = pixelIndex % width;
@@ -172,24 +171,19 @@ internal class Program
         int xL = IntrinsicMath.Clamp(x - 1, 0, width - 1); 
         int xR = IntrinsicMath.Clamp(x + 1, 0, width - 1); 
 
-        // Применяем ядро Собеля X: средний столбец равен нулю (не учитывается)
+        // Применяем ядро Собеля X
         // [-1  0  1]
         // [-2  0  2]
         // [-1  0  1]
         float sum =
-            -1.0f * intensity[yU * width + xL] + 1.0f * intensity[yU * width + xR] +
-            -2.0f * intensity[y * width + xL] + 2.0f * intensity[y * width + xR] +
-            -1.0f * intensity[yD * width + xL] + 1.0f * intensity[yD * width + xR];
+            -1f * intensity[yU * width + xL] + 1f * intensity[yU * width + xR] +
+            -2f * intensity[y * width + xL] + 2f * intensity[y * width + xR] +
+            -1f * intensity[yD * width + xL] + 1f * intensity[yD * width + xR];
 
         mx[pixelIndex] = sum;
     }
-
-    static void SobelYKernel(
-        Index1D pixelIndex,
-        ArrayView<float> intensity,
-        ArrayView<float> my,
-        int width,
-        int height)
+    // MY
+    static void SobelYKernel(Index1D pixelIndex, ArrayView<float> intensity, ArrayView<float> my, int width, int height)
     {
         int x = pixelIndex % width;
         int y = pixelIndex / width;
@@ -199,17 +193,18 @@ internal class Program
         int xL = IntrinsicMath.Clamp(x - 1, 0, width - 1);
         int xR = IntrinsicMath.Clamp(x + 1, 0, width - 1);
 
-        // Применяем ядро Собеля Y: средняя строка равна нулю (не учитывается)
+        // Применяем ядро Собеля Y
         // [-1  -2  -1]
         // [ 0   0   0]
         // [ 1   2   1]
         float sum =
-            -1.0f * intensity[yU * width + xL] + -2.0f * intensity[yU * width + x] + -1.0f * intensity[yU * width + xR] +
-             1.0f * intensity[yD * width + xL] + 2.0f * intensity[yD * width + x] + 1.0f * intensity[yD * width + xR];
+            -1f * intensity[yU * width + xL] + -2f * intensity[yU * width + x] + -1f * intensity[yU * width + xR] +
+             1f * intensity[yD * width + xL] + 2f * intensity[yD * width + x] + 1f * intensity[yD * width + xR];
 
         my[pixelIndex] = sum;
     }
 
+    // MRv = √(MXv^2 + MYv^2)
     static void MagnitudeKernel(Index1D pixelIndex, ArrayView<float> mx, ArrayView<float> my, ArrayView<float> mr)
     {
         float mxVal = mx[pixelIndex];
@@ -217,9 +212,10 @@ internal class Program
         mr[pixelIndex] = (float)Math.Sqrt(mxVal * mxVal + myVal * myVal);
     }
 
+    // MRv = MRv * 255 / MRMax
     static void NormalizeKernel(Index1D pixelIndex, ArrayView<float> mr, ArrayView<byte> output, float maxMR)
     {
-        float normalized = mr[pixelIndex] * 255.0f / maxMR;
+        float normalized = mr[pixelIndex] * 255f / maxMR;
         output[pixelIndex] = (byte)IntrinsicMath.Clamp((int)normalized, 0, 255);
     }
 }

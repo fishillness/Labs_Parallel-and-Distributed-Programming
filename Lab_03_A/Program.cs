@@ -14,7 +14,6 @@ internal class Program
         string[] images = { "img1.jpg", "img2.jpg", "img3.jpg" };
         int repeats = 3;
 
-
         foreach (string imgName in images)
         {
             List<double> times = new List<double>();
@@ -52,8 +51,9 @@ internal class Program
                 times.Add(time);
                 Console.WriteLine($"  [{i}]: {Math.Round(time, 2)}");
             }
+
             byte[] resultImageBytes = new byte[byteCount];
-            gpuResult.CopyToCPU(resultImageBytes);
+            gpuResult.CopyToCPU(resultImageBytes);  
 
             SaveImage(bitmap, resultImageBytes, path, imgName);
 
